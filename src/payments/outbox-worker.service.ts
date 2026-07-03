@@ -18,6 +18,7 @@ export class OutboxWorkerService implements OnModuleInit {
 
   onModuleInit() {
     setInterval(() => {
+      this.logger.log('Searching outbox');
       this.processPendingEvents().catch((error) => {
         this.logger.error('Error processing outbox events', error);
       });

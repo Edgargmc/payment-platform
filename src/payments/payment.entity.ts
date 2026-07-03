@@ -33,8 +33,8 @@ export class Payment {
   @Column()
   qrData: string;
 
-  @Column('decimal', { precision: 12, scale: 2 })
-  amount: number;
+  @Column('bigint')
+  amountInCents: number;
 
   @Column({ length: 3 })
   currency: string;

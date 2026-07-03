@@ -1,3 +1,16 @@
+### Crear pago
+POST http://localhost:3000/payments
+Content-Type: application/json
+
+{
+  "idempotencyKey": "idem-032",
+  "customerId": "customer-123",
+  "merchantId": "merchant-456",
+  "qrData": "000201",
+  "amountInCents": 150050,
+  "currency": "PESOS"
+}
+
 ### Obtener un pago por ID
-GET http://localhost:3000/payments/2160184f-021c-45a8-a7ed-83798fceb151
+GET http://localhost:3000/payments/a739beea-3f6d-4d65-ae27-3e5393e37d58
 Accept: application/json

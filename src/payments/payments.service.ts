@@ -39,7 +39,7 @@ export class PaymentsService {
           idempotencyKey: savedPayment.idempotencyKey,
           customerId: savedPayment.customerId,
           merchantId: savedPayment.merchantId,
-          amount: savedPayment.amount,
+          amountInCents: savedPayment.amountInCents,
           currency: savedPayment.currency,
           qrData: savedPayment.qrData,
         },
