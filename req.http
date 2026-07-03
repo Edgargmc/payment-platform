@@ -1,0 +1,3 @@
+### Obtener un pago por ID
+GET http://localhost:3000/payments/2160184f-021c-45a8-a7ed-83798fceb151
+Accept: application/json
