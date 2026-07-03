@@ -14,6 +14,9 @@ export class HealthService {
     const redisUp = await this.idempotencyCache.ping();
 
     return {
+      service: process.env.APP_NAME || 'payment-platform',
+      version: process.env.APP_VERSION || 'local',
+      environment: process.env.NODE_ENV || 'development',
       status: databaseUp ? 'READY' : 'NOT_READY',
       database: databaseUp ? 'UP' : 'DOWN',
       redis: redisUp ? 'UP' : 'DOWN',

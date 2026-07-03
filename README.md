@@ -1,98 +1,294 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Payment Platform
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A simplified event-driven payment platform built with NestJS, PostgreSQL, Redis and Docker, designed to demonstrate real-world backend engineering patterns commonly used in fintech and payment processing systems.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+## Overview
 
-## Description
+This project simulates the lifecycle of a payment transaction from creation to processing using asynchronous event-driven architecture.
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Key concepts implemented:
 
-## Project setup
+* Idempotency
+* Outbox Pattern
+* Background Workers
+* Event-Driven Processing
+* Redis Caching
+* PostgreSQL Persistence
+* Health Checks
+* Dockerized Deployment
+* Cloud-Native Configuration
 
-```bash
-$ npm install
+---
+
+## Architecture
+
+```text
+Client
+  │
+  ▼
+Payment API (NestJS)
+  │
+  ├── Validation
+  ├── Idempotency
+  └── Persistence
+          │
+          ▼
+     PostgreSQL
+          │
+          ▼
+     Outbox Events
+          │
+          ▼
+   Worker Process
+          │
+          ▼
+ Provider Connector
+          │
+          ▼
+APPROVED | REJECTED | PENDING
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+## Features
 
-# watch mode
-$ npm run start:dev
+### Payment Creation
 
-# production mode
-$ npm run start:prod
+```http
+POST /payments
 ```
 
-## Run tests
+Creates a payment request and stores an associated outbox event in a single database transaction.
 
-```bash
-# unit tests
-$ npm run test
+### Payment Query
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+```http
+GET /payments/{id}
 ```
 
-## Deployment
+Retrieves the current status of a payment.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### Health Endpoints
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+```http
+GET /health
+GET /health/ready
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Provides liveness and readiness information for monitoring and orchestration platforms.
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## Implemented Patterns
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### Idempotency
 
-## Support
+Prevents duplicate payment creation by using an `idempotencyKey`.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+Flow:
 
-## Stay in touch
+```text
+Request
+  │
+  ▼
+Redis Cache
+  │
+  ├── HIT  → Return Existing Payment
+  │
+  └── MISS
+          │
+          ▼
+     PostgreSQL
+```
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
-## License
+### Outbox Pattern
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+Guarantees reliable event generation.
+
+```text
+BEGIN TRANSACTION
+
+INSERT Payment
+INSERT Outbox Event
+
+COMMIT
+```
+
+Prevents data inconsistencies when publishing asynchronous events.
+
+---
+
+### Worker Pattern
+
+Background worker continuously processes pending outbox events.
+
+Responsibilities:
+
+* Read pending events
+* Process payments
+* Update payment status
+* Mark events as processed
+
+---
+
+### Graceful Degradation
+
+Redis is treated as an optimization layer rather than a critical dependency.
+
+```text
+Redis DOWN
+      ↓
+Fallback to PostgreSQL
+      ↓
+Service remains available
+```
+
+---
+
+## Technology Stack
+
+### Backend
+
+* Node.js 20
+* NestJS
+* TypeScript
+
+### Persistence
+
+* PostgreSQL 16
+* Redis 7
+
+### Infrastructure
+
+* Docker
+* Docker Compose
+
+### ORM
+
+* TypeORM
+
+### Validation
+
+* class-validator
+* class-transformer
+
+---
+
+## Project Structure
+
+```text
+src
+├── health
+│   ├── health.controller.ts
+│   └── health.service.ts
+│
+├── payments
+│   ├── dto
+│   ├── payment.entity.ts
+│   ├── outbox-event.entity.ts
+│   ├── payments.controller.ts
+│   ├── payments.service.ts
+│   ├── provider-connector.service.ts
+│   ├── outbox-worker.service.ts
+│   └── idempotency-cache.service.ts
+│
+├── app.module.ts
+├── main.ts
+└── worker.ts
+```
+
+---
+
+## Local Development
+
+Start infrastructure:
+
+```bash
+docker compose up -d postgres redis
+```
+
+Start API:
+
+```bash
+npm run start:api
+```
+
+Start Worker:
+
+```bash
+npm run start:worker
+```
+
+---
+
+## Full Docker Environment
+
+```bash
+docker compose up --build
+```
+
+---
+
+## Example Request
+
+```http
+POST /payments
+```
+
+```json
+{
+  "idempotencyKey": "payment-001",
+  "customerId": "customer-123",
+  "merchantId": "merchant-456",
+  "qrData": "000201010212...",
+  "amountInCents": 150050,
+  "currency": "ARS"
+}
+```
+
+---
+
+## Payment Statuses
+
+| Status     | Description                                |
+| ---------- | ------------------------------------------ |
+| PROCESSING | Payment created and waiting for processing |
+| PENDING    | Final provider status is unknown           |
+| APPROVED   | Payment successfully processed             |
+| REJECTED   | Business rejection from provider           |
+| FAILED     | Technical failure requiring investigation  |
+
+---
+
+## Future Improvements
+
+* AWS ECS/Fargate deployment
+* Amazon RDS PostgreSQL
+* ElastiCache Redis
+* Amazon SQS integration
+* OpenTelemetry tracing
+* Prometheus metrics
+* Circuit Breaker
+* Retry Policies
+* Dead Letter Queues
+* CI/CD Pipeline
+* Automated Testing
+* Event Versioning
+* Multi-provider Routing
+
+---
+
+## Learning Goals
+
+This project was created as a hands-on learning platform for:
+
+* Backend Engineering
+* Distributed Systems
+* Payment Processing
+* Cloud Architecture
+* AWS
+* System Design
+* Event-Driven Systems
+* Fintech Architecture

@@ -9,7 +9,10 @@ export class HealthController {
   health() {
     return {
       status: 'OK',
-      service: 'payment-platform',
+      service: process.env.APP_NAME || 'payment-platform',
+      version: process.env.APP_VERSION || 'local',
+      environment: process.env.NODE_ENV || 'development',
+      uptime: process.uptime(),
       timestamp: new Date().toISOString(),
     };
   }
