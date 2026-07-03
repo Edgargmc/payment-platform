@@ -4,17 +4,24 @@ import Redis from 'ioredis';
 @Injectable()
 export class IdempotencyCacheService {
   private readonly logger = new Logger(IdempotencyCacheService.name);
+
   private readonly redis = new Redis({
-    host: 'localhost',
-    port: 6379,
+    host: process.env.REDIS_HOST || 'localhost',
+    port: Number(process.env.REDIS_PORT) || 6379,
     lazyConnect: true,
+    maxRetriesPerRequest: 1,
   });
+
+  constructor() {
+    this.redis.on('error', () => {
+      this.logger.warn('Redis connection error');
+    });
+  }
 
   async getPaymentId(idempotencyKey: string): Promise<string | null> {
     try {
-      const key = this.buildKey(idempotencyKey);
-      return await this.redis.get(key);
-    } catch (error) {
+      return await this.redis.get(this.buildKey(idempotencyKey));
+    } catch {
       this.logger.warn('Redis unavailable. Falling back to PostgreSQL.');
       return null;
     }
@@ -25,15 +32,13 @@ export class IdempotencyCacheService {
     paymentId: string,
   ): Promise<void> {
     try {
-      const key = this.buildKey(idempotencyKey);
-
       await this.redis.set(
-        key,
+        this.buildKey(idempotencyKey),
         paymentId,
         'EX',
-        60 * 60, // 1 hour
+        3600,
       );
-    } catch (error) {
+    } catch {
       this.logger.warn('Could not save idempotency key in Redis.');
     }
   }
