@@ -3,12 +3,12 @@ POST http://localhost:3000/payments
 Content-Type: application/json
 
 {
-  "idempotencyKey": "idem-032",
+  "idempotencyKey": "idem-026",
   "customerId": "customer-123",
   "merchantId": "merchant-456",
   "qrData": "000201",
   "amountInCents": 150050,
-  "currency": "PESOS"
+  "currency": "ARS"
 }
 
 ### Obtener un pago por ID

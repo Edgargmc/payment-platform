@@ -17,8 +17,17 @@ export class OutboxWorkerService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
+    const workerEnabled = process.env.WORKER_ENABLED === 'true';
+
+    if (!workerEnabled) {
+      this.logger.log('Outbox worker disabled');
+      return;
+    }
+
+    this.logger.log('Outbox worker enabled');
+
     setInterval(() => {
-      this.logger.log('Searching outbox');
+      this.logger.log('Searching...');
       this.processPendingEvents().catch((error) => {
         this.logger.error('Error processing outbox events', error);
       });
