@@ -19,7 +19,7 @@ services:
     ports:
       - "6379:6379"
 
-  # 👇 Agregamos tu API de Node aquí
+  # API de Node
   payment-platform-api:
     build:
       context: .
@@ -29,12 +29,12 @@ services:
       - "3000:3000"
     environment:
       - APP_PORT=3000
-      - DB_HOST=postgres       # 👈 Docker Compose los conecta automáticamente por el nombre del servicio
+      - DB_HOST=postgres
       - DB_PORT=5432
       - DB_USERNAME=payment_user
       - DB_PASSWORD=payment_pass
       - DB_NAME=payment_db
-      - REDIS_HOST=redis       # 👈 Lo mismo para Redis
+      - REDIS_HOST=redis
       - REDIS_PORT=6379
       - WORKER_ENABLED=false
     depends_on:
