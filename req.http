@@ -14,3 +14,19 @@ Content-Type: application/json
 ### Obtener un pago por ID
 GET http://localhost:3000/payments/d7b9acf3-3eef-4050-9516-f0c1a6398367
 Accept: application/json
+
+### Health
+# curl http://localhost:3000/health
+GET http://localhost:3000/health
+
+### READY ?
+
+
+# curl http://localhost:3000/health/ready
+GET http://localhost:3000/health/ready
+
+### REDIS ok ?
+
+# curl http://localhost:3000/health/ready
+GET http://localhost:3000/health/ready
+

@@ -17,5 +17,6 @@ import { IdempotencyCacheService } from './idempotency-cache.service';
     ProviderConnectorService,
     IdempotencyCacheService,
   ],
+  exports: [IdempotencyCacheService],
 })
 export class PaymentsModule {}

@@ -46,4 +46,13 @@ export class IdempotencyCacheService {
   private buildKey(idempotencyKey: string): string {
     return `payment:idempotency:${idempotencyKey}`;
   }
+
+  async ping(): Promise<boolean> {
+    try {
+      const result = await this.redis.ping();
+      return result === 'PONG';
+    } catch {
+      return false;
+    }
+  }
 }
