@@ -7,13 +7,14 @@ import { OutboxEvent } from './outbox-event.entity';
 import { PaymentsController } from './payments.controller';
 import { PaymentsService } from './payments.service';
 
-import { OutboxWorkerService } from './outbox-worker.service';
+import { OutboxPublisherService } from './outbox-publisher.service';
 import { ProviderConnectorService } from './provider-connector.service';
 import { IdempotencyCacheService } from './idempotency-cache.service';
-import { PaymentProcessorService } from './payment-processor-service';
+import { PaymentProcessorService } from './payment-processor.service';
 import { LocalQueueService } from './local-queue.service';
 import { SqsQueueService } from './sqs-queue.service';
 import { QUEUE_PORT } from './queue.constants';
+import { PaymentConsumerService } from './payment-consumer.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Payment, OutboxEvent])],
@@ -22,12 +23,13 @@ import { QUEUE_PORT } from './queue.constants';
 
   providers: [
     PaymentsService,
-    OutboxWorkerService,
+    OutboxPublisherService,
     ProviderConnectorService,
     IdempotencyCacheService,
     PaymentProcessorService,
     LocalQueueService,
     SqsQueueService,
+    PaymentConsumerService,
     {
       provide: QUEUE_PORT,
       useFactory: (

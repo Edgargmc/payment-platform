@@ -191,7 +191,7 @@ src
 │   ├── payments.controller.ts
 │   ├── payments.service.ts
 │   ├── provider-connector.service.ts
-│   ├── outbox-worker.service.ts
+│   ├── outbox-publisher.service.ts
 │   └── idempotency-cache.service.ts
 │
 ├── app.module.ts

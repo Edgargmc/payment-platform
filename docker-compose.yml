@@ -33,7 +33,8 @@ services:
       DB_NAME: payment_db
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      WORKER_ENABLED: "false"
+      OUTBOX_PUBLISHER_ENABLED: "false"
+      PAYMENT_CONSUMER_ENABLED: "false"
     depends_on:
       - postgres
       - redis
@@ -52,10 +53,18 @@ services:
       DB_NAME: payment_db
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      WORKER_ENABLED: "true"
+      OUTBOX_PUBLISHER_ENABLED: "true"
+      PAYMENT_CONSUMER_ENABLED: "true"
     depends_on:
       - postgres
       - redis
-
+  localstack:
+    image: localstack/localstack:latest
+    container_name: payment-localstack
+    ports:
+      - "4566:4566"
+    environment:
+      SERVICES: sqs
+      AWS_DEFAULT_REGION: us-east-1
 volumes:
   payment_postgres_data:

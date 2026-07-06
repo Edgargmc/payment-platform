@@ -18,8 +18,9 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "start:api": "cross-env WORKER_ENABLED=false nest start --watch",
-    "start:worker": "cross-env WORKER_ENABLED=true nest start --watch --entryFile worker"
+    "start:api": "cross-env OUTBOX_PUBLISHER_ENABLED=false PAYMENT_CONSUMER_ENABLED=false nest start --watch",
+    "start:publisher": "cross-env OUTBOX_PUBLISHER_ENABLED=true PAYMENT_CONSUMER_ENABLED=true nest start --watch --entryFile worker",
+    "start:consumer": "cross-env OUTBOX_PUBLISHER_ENABLED=false PAYMENT_CONSUMER_ENABLED=true nest start --watch --entryFile worker"
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.1079.0",

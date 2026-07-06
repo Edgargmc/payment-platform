@@ -5,8 +5,8 @@ import { QUEUE_PORT } from './queue.constants';
 import type { QueuePort } from './queue.interface';
 
 @Injectable()
-export class OutboxWorkerService implements OnModuleInit {
-  private readonly logger = new Logger(OutboxWorkerService.name);
+export class OutboxPublisherService implements OnModuleInit {
+  private readonly logger = new Logger(OutboxPublisherService.name);
 
   constructor(
     private readonly dataSource: DataSource,
@@ -16,14 +16,14 @@ export class OutboxWorkerService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    const workerEnabled = process.env.WORKER_ENABLED === 'true';
+    const publisherEnabled = process.env.OUTBOX_PUBLISHER_ENABLED === 'true';
 
-    if (!workerEnabled) {
-      this.logger.log('Outbox worker disabled');
+    if (!publisherEnabled) {
+      this.logger.log('Outbox publisher disabled');
       return;
     }
 
-    this.logger.log('Outbox worker enabled');
+    this.logger.log('Outbox publisher enabled');
 
     setInterval(() => {
       this.processPendingEvents().catch((error) => {
