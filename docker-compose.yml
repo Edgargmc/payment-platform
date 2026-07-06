@@ -53,9 +53,9 @@ services:
       DB_NAME: payment_db
       REDIS_HOST: redis
       REDIS_PORT: 6379
+      QUEUE_PROVIDER: sqs
       OUTBOX_PUBLISHER_ENABLED: "true"
       PAYMENT_CONSUMER_ENABLED: "true"
-      QUEUE_PROVIDER: sqs
       AWS_REGION: us-east-1
       SQS_ENDPOINT: http://localstack:4566
       SQS_QUEUE_NAME: payment-events
