@@ -22,6 +22,7 @@
     "start:worker": "cross-env WORKER_ENABLED=true nest start --watch --entryFile worker"
   },
   "dependencies": {
+    "@aws-sdk/client-sqs": "^3.1079.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.4",
     "@nestjs/core": "^11.0.1",

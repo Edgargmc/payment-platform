@@ -3,7 +3,7 @@ POST http://localhost:3000/payments
 Content-Type: application/json
 
 {
-  "idempotencyKey": "idem-199",
+  "idempotencyKey": "idem-224",
   "customerId": "customer-123",
   "merchantId": "merchant-456",
   "qrData": "000201",
@@ -12,7 +12,7 @@ Content-Type: application/json
 }
 
 ### Obtener un pago por ID
-GET http://localhost:3000/payments/d7b9acf3-3eef-4050-9516-f0c1a6398367
+GET http://localhost:3000/payments/b4f006d9-a041-4ba3-9d38-4837cecdf26e
 Accept: application/json
 
 ### Health
