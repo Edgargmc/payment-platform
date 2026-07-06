@@ -15,6 +15,7 @@ import { LocalQueueService } from './local-queue.service';
 import { SqsQueueService } from './sqs-queue.service';
 import { QUEUE_PORT } from './queue.constants';
 import { PaymentConsumerService } from './payment-consumer.service';
+import { QueueBootstrapService } from './queue-bootstrap.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Payment, OutboxEvent])],
@@ -30,6 +31,7 @@ import { PaymentConsumerService } from './payment-consumer.service';
     LocalQueueService,
     SqsQueueService,
     PaymentConsumerService,
+    QueueBootstrapService,
     {
       provide: QUEUE_PORT,
       useFactory: (
