@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PaymentsController } from './payments.controller';
 import { PaymentsService } from './payments.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
+import { DlqInspectorService } from './dlq-inspector.service';
 
 describe('PaymentsController', () => {
   let controller: PaymentsController;
@@ -9,11 +10,17 @@ describe('PaymentsController', () => {
     create: jest.Mock;
     findById: jest.Mock;
   };
+  let dlqInspectorService: {
+    peekMessages: jest.Mock;
+  };
 
   beforeEach(async () => {
     paymentsService = {
       create: jest.fn(),
       findById: jest.fn(),
+    };
+    dlqInspectorService = {
+      peekMessages: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -22,6 +29,10 @@ describe('PaymentsController', () => {
         {
           provide: PaymentsService,
           useValue: paymentsService,
+        },
+        {
+          provide: DlqInspectorService,
+          useValue: dlqInspectorService,
         },
       ],
     }).compile();
@@ -55,5 +66,13 @@ describe('PaymentsController', () => {
 
     await expect(controller.findById('payment-2')).resolves.toBe(payment);
     expect(paymentsService.findById).toHaveBeenCalledWith('payment-2');
+  });
+
+  it('delegates DLQ inspection to service', async () => {
+    const dlqPayload = { status: 'OK', count: 1, messages: [] };
+    dlqInspectorService.peekMessages.mockResolvedValue(dlqPayload);
+
+    await expect(controller.peekDlq()).resolves.toBe(dlqPayload);
+    expect(dlqInspectorService.peekMessages).toHaveBeenCalledTimes(1);
   });
 });
