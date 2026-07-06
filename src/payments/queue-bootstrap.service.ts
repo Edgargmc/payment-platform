@@ -1,6 +1,7 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import {
   CreateQueueCommand,
+  GetQueueAttributesCommand,
   GetQueueUrlCommand,
   SQSClient,
 } from '@aws-sdk/client-sqs';
@@ -24,25 +25,55 @@ export class QueueBootstrapService implements OnModuleInit {
     }
 
     const queueName = process.env.SQS_QUEUE_NAME || 'payment-events';
+    const dlqName = `${queueName}-dlq`;
 
     try {
       await this.client.send(
         new CreateQueueCommand({
-          QueueName: queueName,
+          QueueName: dlqName,
         }),
       );
 
-      const result = await this.client.send(
+      const dlqUrlResult = await this.client.send(
+        new GetQueueUrlCommand({
+          QueueName: dlqName,
+        }),
+      );
+
+      const dlqAttributes = await this.client.send(
+        new GetQueueAttributesCommand({
+          QueueUrl: dlqUrlResult.QueueUrl,
+          AttributeNames: ['QueueArn'],
+        }),
+      );
+
+      const dlqArn = dlqAttributes.Attributes?.QueueArn;
+
+      await this.client.send(
+        new CreateQueueCommand({
+          QueueName: queueName,
+          Attributes: {
+            RedrivePolicy: JSON.stringify({
+              deadLetterTargetArn: dlqArn,
+              maxReceiveCount: '3',
+            }),
+          },
+        }),
+      );
+
+      const queueUrlResult = await this.client.send(
         new GetQueueUrlCommand({
           QueueName: queueName,
         }),
       );
 
-      process.env.SQS_QUEUE_URL = result.QueueUrl;
+      process.env.SQS_QUEUE_URL = queueUrlResult.QueueUrl;
+      process.env.SQS_DLQ_URL = dlqUrlResult.QueueUrl;
 
-      this.logger.log(`SQS queue ready: ${result.QueueUrl}`);
+      this.logger.log(`SQS queue ready: ${queueUrlResult.QueueUrl}`);
+      this.logger.log(`SQS DLQ ready: ${dlqUrlResult.QueueUrl}`);
     } catch (error) {
-      this.logger.error('Could not create or resolve SQS queue', error);
+      this.logger.error('Could not create or resolve SQS queues', error);
       throw error;
     }
   }

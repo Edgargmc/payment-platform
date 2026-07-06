@@ -17,6 +17,7 @@ import { QUEUE_PORT } from './queue.constants';
 import { PaymentConsumerService } from './payment-consumer.service';
 import { QueueBootstrapService } from './queue-bootstrap.service';
 import { SqsConsumerService } from './sqs-consumer.services';
+import { DlqInspectorService } from './dlq-inspector.service';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Payment, OutboxEvent])],
@@ -34,6 +35,7 @@ import { SqsConsumerService } from './sqs-consumer.services';
     PaymentConsumerService,
     QueueBootstrapService,
     SqsConsumerService,
+    DlqInspectorService,
     {
       provide: QUEUE_PORT,
       useFactory: (

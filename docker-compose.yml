@@ -35,6 +35,12 @@ services:
       REDIS_PORT: 6379
       OUTBOX_PUBLISHER_ENABLED: "false"
       PAYMENT_CONSUMER_ENABLED: "false"
+      QUEUE_PROVIDER: sqs
+      AWS_REGION: us-east-1
+      SQS_ENDPOINT: http://localstack:4566
+      SQS_QUEUE_NAME: payment-events
+      AWS_ACCESS_KEY_ID: test
+      AWS_SECRET_ACCESS_KEY: test
     depends_on:
       - postgres
       - redis
