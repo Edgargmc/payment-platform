@@ -16,6 +16,25 @@ export class PaymentProcessorService {
   ) {}
 
   async processPaymentCreated(paymentId: string): Promise<void> {
+    const payment = await this.dataSource.manager.findOne(Payment, {
+      where: { id: paymentId },
+    });
+
+    if (!payment) {
+      this.logger.warn(`Payment not found: ${paymentId}`);
+      return;
+    }
+
+    if (
+      payment.status === PaymentStatus.APPROVED ||
+      payment.status === PaymentStatus.REJECTED
+    ) {
+      this.logger.warn(
+        `Payment ${paymentId} already finalized with status ${payment.status}`,
+      );
+      return;
+    }
+
     this.logger.log(`Processing payment ${paymentId}`);
 
     const providerResponse = await this.providerConnector.processPayment();

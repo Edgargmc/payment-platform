@@ -18,9 +18,11 @@ import { PaymentConsumerService } from './payment-consumer.service';
 import { QueueBootstrapService } from './queue-bootstrap.service';
 import { SqsConsumerService } from './sqs-consumer.services';
 import { DlqInspectorService } from './dlq-inspector.service';
+import { ProcessedMessage } from './processed-message.entity';
+import { ProcessedMessageService } from './processed-message.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Payment, OutboxEvent])],
+  imports: [TypeOrmModule.forFeature([Payment, OutboxEvent, ProcessedMessage])],
 
   controllers: [PaymentsController],
 
@@ -36,6 +38,7 @@ import { DlqInspectorService } from './dlq-inspector.service';
     QueueBootstrapService,
     SqsConsumerService,
     DlqInspectorService,
+    ProcessedMessageService,
     {
       provide: QUEUE_PORT,
       useFactory: (

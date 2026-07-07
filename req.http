@@ -3,7 +3,7 @@ POST http://localhost:3000/payments
 Content-Type: application/json
 
 {
-  "idempotencyKey": "idem-235",
+  "idempotencyKey": "idem-240",
   "customerId": "customer-123",
   "merchantId": "merchant-456",
   "qrData": "000201",
