@@ -13,7 +13,7 @@ Content-Type: application/json
 }
 
 ### Obtener un pago por ID
-GET http://localhost:3000/payments/44210672-1ac0-45b4-ad7c-320d7edbeb11
+GET http://localhost:3000/payments/409bbd70-5574-4040-a9d3-a03308984030
 Accept: application/json
 
 ### Health

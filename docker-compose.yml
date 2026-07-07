@@ -33,14 +33,13 @@ services:
       DB_NAME: payment_db
       REDIS_HOST: redis
       REDIS_PORT: 6379
-      OUTBOX_PUBLISHER_ENABLED: "false"
-      PAYMENT_CONSUMER_ENABLED: "false"
       QUEUE_PROVIDER: sqs
       AWS_REGION: us-east-1
-      SQS_ENDPOINT: http://localstack:4566
       SQS_QUEUE_NAME: payment-events
-      AWS_ACCESS_KEY_ID: test
-      AWS_SECRET_ACCESS_KEY: test
+      OUTBOX_PUBLISHER_ENABLED: "false"
+      PAYMENT_CONSUMER_ENABLED: "false"
+    volumes:
+      - /c/Users/edgar.gomez/.aws:/root/.aws:ro
     depends_on:
       - postgres
       - redis
@@ -60,32 +59,15 @@ services:
       REDIS_HOST: redis
       REDIS_PORT: 6379
       QUEUE_PROVIDER: sqs
+      AWS_REGION: us-east-1
+      SQS_QUEUE_NAME: payment-events
       OUTBOX_PUBLISHER_ENABLED: "true"
       PAYMENT_CONSUMER_ENABLED: "true"
-      AWS_REGION: us-east-1
-      SQS_ENDPOINT: http://localstack:4566
-      SQS_QUEUE_NAME: payment-events
-      AWS_ACCESS_KEY_ID: test
-      AWS_SECRET_ACCESS_KEY: test
+    volumes:
+      - /c/Users/edgar.gomez/.aws:/root/.aws:ro
     depends_on:
-      postgres:
-        condition: service_started
-      redis:
-        condition: service_started
-      localstack:
-        condition: service_healthy
-  localstack:
-    image: localstack/localstack:3.8.1
-    container_name: payment-localstack
-    ports:
-      - "4566:4566"
-    environment:
-      SERVICES: sqs
-      AWS_DEFAULT_REGION: us-east-1
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:4566/_localstack/health" ]
-      interval: 5s
-      timeout: 3s
-      retries: 20
+      - postgres
+      - redis
+
 volumes:
   payment_postgres_data:
