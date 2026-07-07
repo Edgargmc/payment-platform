@@ -1,6 +1,8 @@
 # Payment Platform
 
-A simplified event-driven payment platform built with NestJS, PostgreSQL, Redis and Docker, designed to demonstrate real-world backend engineering patterns commonly used in fintech and payment processing systems.
+A production-inspired payment processing platform built with NestJS, PostgreSQL, Redis and AWS messaging patterns.
+
+The project demonstrates how modern fintech systems handle idempotency, reliable event publishing, asynchronous processing, distributed messaging, dead-letter queues, and consumer resiliency using real-world architectural patterns.
 
 ## Overview
 
@@ -28,30 +30,48 @@ Client
   ▼
 Payment API (NestJS)
   │
-  ├── Validation
-  ├── Idempotency
-  └── Persistence
-          │
-          ▼
-     PostgreSQL
-          │
-          ▼
-     Outbox Events
-          │
-          ▼
-   Worker Process
-          │
-          ▼
- Provider Connector
-          │
-          ▼
+  ▼
+PostgreSQL
+  │
+  ▼
+Outbox Pattern
+  │
+  ▼
+Outbox Publisher
+  │
+  ▼
+Amazon SQS
+  │
+  ▼
+Payment Consumer
+  │
+  ▼
+Provider Connector
+  │
+  ▼
 APPROVED | REJECTED | PENDING
+
+               │
+               ▼
+            DLQ
 ```
 
 ---
 
 ## Features
 
+### Distributed Messaging
+
+Amazon SQS integration using AWS SDK.
+
+Features:
+
+- Asynchronous event delivery
+  - Dead Letter Queue (DLQ)
+  - Retry handling
+  - At-Least-Once delivery semantics
+  - Consumer resiliency
+  - 
 ### Payment Creation
 
 ```http
@@ -146,6 +166,17 @@ Service remains available
 ```
 
 ---
+### Consumer Idempotency
+
+SQS Standard queues provide At-Least-Once delivery guarantees.
+
+To prevent duplicate processing:
+
+- processed_messages table
+- payment state validation
+- duplicate event detection
+
+This ensures payment operations remain safe even when messages are delivered multiple times.
 
 ## Technology Stack
 
@@ -264,21 +295,26 @@ POST /payments
 
 ## Future Improvements
 
-* AWS ECS/Fargate deployment
-* Amazon RDS PostgreSQL
-* ElastiCache Redis
-* Amazon SQS integration
-* OpenTelemetry tracing
-* Prometheus metrics
-* Circuit Breaker
-* Retry Policies
-* Dead Letter Queues
-* CI/CD Pipeline
-* Automated Testing
-* Event Versioning
-* Multi-provider Routing
-
+- Amazon ECS / Fargate deployment
+- Amazon RDS PostgreSQL
+- Amazon ElastiCache Redis
+- AWS Secrets Manager
+- OpenTelemetry
+- Prometheus / Grafana
+- Circuit Breaker Pattern
+- Infrastructure as Code (Terraform)
+- Multi-region failover
 ---
+## AWS Concepts Implemented
+
+- Amazon SQS
+- Dead Letter Queues (DLQ)
+- AWS SDK v3
+- Queue Consumers
+- Queue Publishers
+- Event-Driven Architecture
+- Distributed Systems Patterns
+- Cloud-Native Service Design
 
 ## Learning Goals
 
