@@ -51,6 +51,7 @@ export class SqsConsumerService implements OnModuleInit {
       return;
     }
 
+
     const result = await this.client.send(
       new ReceiveMessageCommand({
         QueueUrl: queueUrl,
@@ -68,7 +69,9 @@ export class SqsConsumerService implements OnModuleInit {
       }
 
       const message = JSON.parse(sqsMessage.Body) as PaymentMessage;
-
+      this.logger.log(
+        `Received SQS message | eventId=${message.eventId} | paymentId=${message.paymentId} | correlationId=${message.correlationId}`,
+      );
       await this.paymentConsumer.consume(message);
 
       await this.client.send(

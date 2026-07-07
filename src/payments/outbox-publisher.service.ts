@@ -45,7 +45,10 @@ export class OutboxPublisherService implements OnModuleInit {
       `);
 
       for (const event of events) {
-        this.logger.log(`Processing outbox event ${event.id}`);
+        this.logger.log(
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          `Processing outbox event ${event.id} | paymentId=${event.aggregateId} | correlationId=${event.payload?.correlationId}`,
+        );
 
         await manager.query(
           `
@@ -59,10 +62,15 @@ export class OutboxPublisherService implements OnModuleInit {
 
         await this.queuePort.publish({
           eventId: event.id,
+          correlationId: event.payload?.correlationId,
           eventType: event.eventType,
           paymentId: event.aggregateId,
           payload: event.payload,
         });
+
+        this.logger.log(
+          `Outbox event ${event.id} published | paymentId=${event.aggregateId} | correlationId=${event.payload?.correlationId}`,
+        );
 
         await manager.query(
           `

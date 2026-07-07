@@ -56,6 +56,7 @@ export class PaymentsService {
         payload: {
           paymentId: newPayment.id,
           idempotencyKey: newPayment.idempotencyKey,
+          correlationId: newPayment.correlationId,
           customerId: newPayment.customerId,
           merchantId: newPayment.merchantId,
           amountInCents: newPayment.amountInCents,

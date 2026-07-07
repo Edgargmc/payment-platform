@@ -25,6 +25,9 @@ export class Payment {
   idempotencyKey: string;
 
   @Column()
+  correlationId: string;
+
+  @Column()
   customerId: string;
 
   @Column()

@@ -15,7 +15,10 @@ export class PaymentProcessorService {
     private readonly providerConnector: ProviderConnectorService,
   ) {}
 
-  async processPaymentCreated(paymentId: string): Promise<void> {
+  async processPaymentCreated(
+    paymentId: string,
+    correlationId?: string,
+  ): Promise<void> {
     const payment = await this.dataSource.manager.findOne(Payment, {
       where: { id: paymentId },
     });
@@ -35,9 +38,11 @@ export class PaymentProcessorService {
       return;
     }
 
-    this.logger.log(`Processing payment ${paymentId}`);
+    this.logger.log(
+      `Processing payment ${paymentId} | correlationId=${correlationId}`,
+    );
 
-    const providerResponse = await this.providerConnector.processPayment();
+    const providerResponse = this.providerConnector.processPayment();
 
     if (providerResponse.status === ProviderPaymentStatus.APPROVED) {
       await this.dataSource.manager.update(Payment, paymentId, {
@@ -61,6 +66,16 @@ export class PaymentProcessorService {
     if (providerResponse.status === ProviderPaymentStatus.TIMEOUT) {
       await this.dataSource.manager.update(Payment, paymentId, {
         status: PaymentStatus.PENDING,
+        errorCode: providerResponse.errorCode,
+        errorMessage: providerResponse.errorMessage,
+      });
+    }
+
+    if (
+      providerResponse.status === ProviderPaymentStatus.PROVIDER_UNAVAILABLE
+    ) {
+      await this.dataSource.manager.update(Payment, paymentId, {
+        status: PaymentStatus.FAILED,
         errorCode: providerResponse.errorCode,
         errorMessage: providerResponse.errorMessage,
       });

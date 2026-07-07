@@ -7,6 +7,10 @@ export class CreatePaymentDto {
 
   @IsString()
   @IsNotEmpty()
+  correlationId: string;
+
+  @IsString()
+  @IsNotEmpty()
   customerId: string;
 
   @IsString()

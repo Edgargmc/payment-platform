@@ -3,10 +3,11 @@ POST http://localhost:3000/payments
 Content-Type: application/json
 
 {
-  "idempotencyKey": "idem-240",
+  "idempotencyKey": "idem-correlation-001",
+  "correlationId": "corr-001",
   "customerId": "customer-123",
   "merchantId": "merchant-456",
-  "qrData": "000201",
+  "qrData": "000201010212...",
   "amountInCents": 150050,
   "currency": "ARS"
 }

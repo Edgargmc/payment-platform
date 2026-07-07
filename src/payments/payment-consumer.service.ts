@@ -30,11 +30,14 @@ export class PaymentConsumerService {
     }
 
     this.logger.log(
-      `Consuming message ${message.eventId} with type ${message.eventType}`,
+      `Consuming message ${message.eventId} | paymentId=${message.paymentId} | correlationId=${message.correlationId}`,
     );
 
     if (message.eventType === 'PAYMENT_CREATED') {
-      await this.paymentProcessor.processPaymentCreated(message.paymentId);
+      await this.paymentProcessor.processPaymentCreated(
+        message.paymentId,
+        message.correlationId,
+      );
       await this.processedMessageService.markAsProcessed(message.eventId);
       return;
     }
