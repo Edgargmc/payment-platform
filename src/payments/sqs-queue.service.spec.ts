@@ -23,17 +23,13 @@ describe('SqsQueueService', () => {
     process.env = originalEnv;
   });
 
-  it('throws when SQS_QUEUE_URL is missing', async () => {
-    delete process.env.SQS_QUEUE_URL;
+  it('resolves queue url from env during module init', async () => {
+    process.env.SQS_QUEUE_URL =
+      'http://localhost:4566/000000000000/payment-events';
 
-    await expect(
-      service.publish({
-        eventId: 'event-1',
-        eventType: 'PAYMENT_CREATED',
-        paymentId: 'payment-1',
-        payload: {},
-      }),
-    ).rejects.toThrow('SQS_QUEUE_URL is not configured');
+    await service.onModuleInit();
+
+    expect(sendMock).not.toHaveBeenCalled();
   });
 
   it('publishes message to configured SQS queue', async () => {
@@ -43,7 +39,10 @@ describe('SqsQueueService', () => {
       paymentId: 'payment-1',
       payload: { amountInCents: 1000 },
     };
-    process.env.SQS_QUEUE_URL = 'http://localhost:4566/000000000000/payment-events';
+    process.env.SQS_QUEUE_URL =
+      'http://localhost:4566/000000000000/payment-events';
+
+    await service.onModuleInit();
 
     await service.publish(message);
 
@@ -53,5 +52,14 @@ describe('SqsQueueService', () => {
       QueueUrl: process.env.SQS_QUEUE_URL,
       MessageBody: JSON.stringify(message),
     });
+  });
+
+  it('throws during module init when queue name is missing and url was not preconfigured', async () => {
+    delete process.env.SQS_QUEUE_URL;
+    delete process.env.SQS_QUEUE_NAME;
+
+    await expect(service.onModuleInit()).rejects.toThrow(
+      'SQS_QUEUE_NAME is not configured',
+    );
   });
 });

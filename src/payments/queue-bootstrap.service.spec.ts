@@ -36,6 +36,7 @@ describe('QueueBootstrapService', () => {
 
   it('creates main queue and DLQ when queue provider is sqs', async () => {
     process.env.QUEUE_PROVIDER = 'sqs';
+    process.env.QUEUE_BOOTSTRAP_ENABLED = 'true';
     process.env.SQS_QUEUE_NAME = 'payment-events';
     sendMock
       .mockResolvedValueOnce({})
@@ -50,11 +51,14 @@ describe('QueueBootstrapService', () => {
       .mockResolvedValueOnce({})
       .mockResolvedValueOnce({
         QueueUrl: 'http://localhost:4566/queue/payment-events',
+      })
+      .mockResolvedValueOnce({
+        QueueUrl: 'http://localhost:4566/queue/payment-events-dlq',
       });
 
     await service.onModuleInit();
 
-    expect(sendMock).toHaveBeenCalledTimes(5);
+    expect(sendMock).toHaveBeenCalledTimes(6);
     expect(sendMock.mock.calls[0][0]).toBeInstanceOf(CreateQueueCommand);
     expect(sendMock.mock.calls[0][0].input).toEqual({
       QueueName: 'payment-events-dlq',
@@ -83,11 +87,40 @@ describe('QueueBootstrapService', () => {
     expect(sendMock.mock.calls[4][0].input).toEqual({
       QueueName: 'payment-events',
     });
+    expect(sendMock.mock.calls[5][0]).toBeInstanceOf(GetQueueUrlCommand);
+    expect(sendMock.mock.calls[5][0].input).toEqual({
+      QueueName: 'payment-events-dlq',
+    });
     expect(process.env.SQS_QUEUE_URL).toBe(
       'http://localhost:4566/queue/payment-events',
     );
     expect(process.env.SQS_DLQ_URL).toBe(
       'http://localhost:4566/queue/payment-events-dlq',
     );
+  });
+
+  it('only resolves queue urls when bootstrap is disabled', async () => {
+    process.env.QUEUE_PROVIDER = 'sqs';
+    process.env.QUEUE_BOOTSTRAP_ENABLED = 'false';
+    process.env.SQS_QUEUE_NAME = 'payment-events';
+    sendMock
+      .mockResolvedValueOnce({
+        QueueUrl: 'http://localhost:4566/queue/payment-events',
+      })
+      .mockResolvedValueOnce({
+        QueueUrl: 'http://localhost:4566/queue/payment-events-dlq',
+      });
+
+    await service.onModuleInit();
+
+    expect(sendMock).toHaveBeenCalledTimes(2);
+    expect(sendMock.mock.calls[0][0]).toBeInstanceOf(GetQueueUrlCommand);
+    expect(sendMock.mock.calls[0][0].input).toEqual({
+      QueueName: 'payment-events',
+    });
+    expect(sendMock.mock.calls[1][0]).toBeInstanceOf(GetQueueUrlCommand);
+    expect(sendMock.mock.calls[1][0].input).toEqual({
+      QueueName: 'payment-events-dlq',
+    });
   });
 });
