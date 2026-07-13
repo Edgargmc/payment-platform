@@ -1,0 +1,82 @@
+version: "3.9"
+
+services:
+
+  payment-platform-api:
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: payment-platform-api
+
+    ports:
+      - "3000:3000"
+
+    environment:
+
+      NODE_ENV: production
+
+      APP_PORT: 3000
+
+      DB_HOST: payment-platform-db.cyzw6qqgshb5.us-east-1.rds.amazonaws.com
+      DB_PORT: 5432
+      DB_USERNAME: payment_user
+      DB_PASSWORD: payment_pass_1234
+      DB_NAME: payment_db
+      DB_SSL: "true"
+
+      REDIS_HOST: payment-platform-redis.xxxxxx.use1.cache.amazonaws.com
+      REDIS_PORT: 6379
+
+      QUEUE_PROVIDER: sqs
+
+      AWS_REGION: us-east-1
+
+      SQS_QUEUE_NAME: payment-events
+
+      QUEUE_BOOTSTRAP_ENABLED: "false"
+
+      OUTBOX_PUBLISHER_ENABLED: "false"
+      PAYMENT_CONSUMER_ENABLED: "false"
+
+    volumes:
+      - ~/.aws:/root/.aws:ro
+
+  payment-platform-worker:
+
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    container_name: payment-platform-worker
+
+    command: ["node", "dist/worker.js"]
+
+    environment:
+
+      NODE_ENV: production
+
+      DB_HOST: payment-platform-db.cyzw6qqgshb5.us-east-1.rds.amazonaws.com
+      DB_PORT: 5432
+      DB_USERNAME: payment_user
+      DB_PASSWORD: payment_pass_1234
+      DB_NAME: payment_db
+      DB_SSL: "true"
+
+      REDIS_HOST: payment-platform-redis.xxxxxx.use1.cache.amazonaws.com
+      REDIS_PORT: 6379
+
+      QUEUE_PROVIDER: sqs
+
+      AWS_REGION: us-east-1
+
+      SQS_QUEUE_NAME: payment-events
+
+      QUEUE_BOOTSTRAP_ENABLED: "false"
+
+      OUTBOX_PUBLISHER_ENABLED: "true"
+      PAYMENT_CONSUMER_ENABLED: "true"
+
+    volumes:
+      - ~/.aws:/root/.aws:ro

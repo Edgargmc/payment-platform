@@ -3,8 +3,8 @@ POST http://localhost:3000/payments
 Content-Type: application/json
 
 {
-  "idempotencyKey": "idem-correlation-001",
-  "correlationId": "corr-001",
+  "idempotencyKey": "idem-correlation-004",
+  "correlationId": "corr-002",
   "customerId": "customer-123",
   "merchantId": "merchant-456",
   "qrData": "000201010212...",
@@ -13,7 +13,7 @@ Content-Type: application/json
 }
 
 ### Obtener un pago por ID
-GET http://localhost:3000/payments/409bbd70-5574-4040-a9d3-a03308984030
+GET http://localhost:3000/payments/4830b932-4933-4404-90d6-89165edc9d69
 Accept: application/json
 
 ### Health

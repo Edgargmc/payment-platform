@@ -5,7 +5,6 @@ import { PaymentsModule } from './payments/payments.module';
 import { HealthController } from './health/health.controller';
 import { HealthService } from './health/health.service';
 
-
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -21,6 +20,10 @@ import { HealthService } from './health/health.service';
       database: process.env.DB_NAME,
       autoLoadEntities: true,
       synchronize: true,
+      ssl:
+        process.env.DB_SSL === 'true'
+          ? { rejectUnauthorized: false }
+          : false,
     }),
 
     PaymentsModule,
