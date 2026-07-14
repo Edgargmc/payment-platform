@@ -20,25 +20,20 @@ export class PaymentConsumerService {
       return;
     }
 
-    const alreadyProcessed = await this.processedMessageService.wasProcessed(
-      message.eventId,
-    );
-
-    if (alreadyProcessed) {
-      this.logger.warn(`Duplicated message ignored: ${message.eventId}`);
-      return;
-    }
-
-    this.logger.log(
-      `Consuming message ${message.eventId} | paymentId=${message.paymentId} | correlationId=${message.correlationId}`,
-    );
-
     if (message.eventType === 'PAYMENT_CREATED') {
-      await this.paymentProcessor.processPaymentCreated(
-        message.paymentId,
-        message.correlationId,
+      await this.processedMessageService.executeOnce(
+        message.eventId,
+        async () => {
+          this.logger.log(
+            `Consuming message ${message.eventId} | paymentId=${message.paymentId} | correlationId=${message.correlationId}`,
+          );
+
+          await this.paymentProcessor.processPaymentCreated(
+            message.paymentId,
+            message.correlationId,
+          );
+        },
       );
-      await this.processedMessageService.markAsProcessed(message.eventId);
       return;
     }
 

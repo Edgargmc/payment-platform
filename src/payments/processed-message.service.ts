@@ -1,36 +1,49 @@
+import { createHash } from 'crypto';
 import { Injectable, Logger } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DataSource } from 'typeorm';
 import { ProcessedMessage } from './processed-message.entity';
 
 @Injectable()
 export class ProcessedMessageService {
   private readonly logger = new Logger(ProcessedMessageService.name);
 
-  constructor(
-    @InjectRepository(ProcessedMessage)
-    private readonly repository: Repository<ProcessedMessage>,
-  ) {}
+  constructor(private readonly dataSource: DataSource) {}
 
-  async wasProcessed(messageId: string): Promise<boolean> {
-    const existingMessage = await this.repository.findOne({
-      where: { messageId },
-    });
-    this.logger.log(
-      `Message ${messageId} was already processed?: ${!!existingMessage} `,
-    );
-    return !!existingMessage;
-  }
+  async executeOnce(
+    messageId: string,
+    callback: () => Promise<void>,
+  ): Promise<boolean> {
+    const [lockKey1, lockKey2] = this.buildLockKeys(messageId);
 
-  async markAsProcessed(messageId: string): Promise<void> {
-    try {
-      const processedMessage = this.repository.create({
-        messageId,
+    return this.dataSource.transaction(async (manager) => {
+      await manager.query('SELECT pg_advisory_xact_lock($1, $2)', [
+        lockKey1,
+        lockKey2,
+      ]);
+
+      const existingMessage = await manager.findOne(ProcessedMessage, {
+        where: { messageId },
       });
 
-      await this.repository.save(processedMessage);
-    } catch {
-      this.logger.warn(`Message ${messageId} was already marked as processed`);
-    }
+      if (existingMessage) {
+        this.logger.warn(`Duplicated message ignored: ${messageId}`);
+        return false;
+      }
+
+      await callback();
+
+      const processedMessage = manager.create(ProcessedMessage, { messageId });
+      await manager.save(processedMessage);
+
+      return true;
+    });
+  }
+
+  private buildLockKeys(messageId: string): [number, number] {
+    const hash = createHash('sha256')
+      .update(`payment-event:${messageId}`)
+      .digest();
+
+    return [hash.readInt32BE(0), hash.readInt32BE(4)];
   }
 }

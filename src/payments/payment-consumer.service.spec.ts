@@ -7,8 +7,7 @@ describe('PaymentConsumerService', () => {
   let service: PaymentConsumerService;
   let paymentProcessor: { processPaymentCreated: jest.Mock };
   let processedMessageService: {
-    wasProcessed: jest.Mock;
-    markAsProcessed: jest.Mock;
+    executeOnce: jest.Mock;
   };
 
   const originalEnv = process.env;
@@ -28,8 +27,14 @@ describe('PaymentConsumerService', () => {
       processPaymentCreated: jest.fn(),
     };
     processedMessageService = {
-      wasProcessed: jest.fn().mockResolvedValue(false),
-      markAsProcessed: jest.fn(),
+      executeOnce: jest
+        .fn()
+        .mockImplementation(
+          async (_eventId: string, callback: () => Promise<void>) => {
+            await callback();
+            return true;
+          },
+        ),
     };
 
     service = new PaymentConsumerService(
@@ -48,7 +53,7 @@ describe('PaymentConsumerService', () => {
     await service.consume(message);
 
     expect(paymentProcessor.processPaymentCreated).not.toHaveBeenCalled();
-    expect(processedMessageService.wasProcessed).not.toHaveBeenCalled();
+    expect(processedMessageService.executeOnce).not.toHaveBeenCalled();
   });
 
   it('processes PAYMENT_CREATED when consumer is enabled', async () => {
@@ -56,26 +61,23 @@ describe('PaymentConsumerService', () => {
 
     await service.consume(message);
 
-    expect(processedMessageService.wasProcessed).toHaveBeenCalledWith(
+    expect(processedMessageService.executeOnce).toHaveBeenCalledWith(
       message.eventId,
+      expect.any(Function),
     );
     expect(paymentProcessor.processPaymentCreated).toHaveBeenCalledWith(
       message.paymentId,
       message.correlationId,
     );
-    expect(processedMessageService.markAsProcessed).toHaveBeenCalledWith(
-      message.eventId,
-    );
   });
 
   it('ignores duplicated messages', async () => {
     process.env.PAYMENT_CONSUMER_ENABLED = 'true';
-    processedMessageService.wasProcessed.mockResolvedValue(true);
+    processedMessageService.executeOnce.mockResolvedValue(false);
 
     await service.consume(message);
 
     expect(paymentProcessor.processPaymentCreated).not.toHaveBeenCalled();
-    expect(processedMessageService.markAsProcessed).not.toHaveBeenCalled();
   });
 
   it('ignores unsupported event types', async () => {
@@ -87,11 +89,37 @@ describe('PaymentConsumerService', () => {
     });
 
     expect(paymentProcessor.processPaymentCreated).not.toHaveBeenCalled();
-    expect(processedMessageService.markAsProcessed).not.toHaveBeenCalled();
+    expect(processedMessageService.executeOnce).not.toHaveBeenCalled();
   });
 
   it('should process the same eventId only once under concurrent consumption', async () => {
     process.env.PAYMENT_CONSUMER_ENABLED = 'true';
+    let processed = false;
+    let previousExecution = Promise.resolve();
+
+    processedMessageService.executeOnce.mockImplementation(
+      async (_eventId: string, callback: () => Promise<void>) => {
+        const waitForPrevious = previousExecution;
+        let releaseExecution!: () => void;
+        previousExecution = new Promise<void>((resolve) => {
+          releaseExecution = resolve;
+        });
+
+        await waitForPrevious;
+
+        try {
+          if (processed) {
+            return false;
+          }
+
+          await callback();
+          processed = true;
+          return true;
+        } finally {
+          releaseExecution();
+        }
+      },
+    );
 
     await Promise.all([service.consume(message), service.consume(message)]);
 
