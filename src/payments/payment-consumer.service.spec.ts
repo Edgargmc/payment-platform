@@ -89,4 +89,12 @@ describe('PaymentConsumerService', () => {
     expect(paymentProcessor.processPaymentCreated).not.toHaveBeenCalled();
     expect(processedMessageService.markAsProcessed).not.toHaveBeenCalled();
   });
+
+  it('should process the same eventId only once under concurrent consumption', async () => {
+    process.env.PAYMENT_CONSUMER_ENABLED = 'true';
+
+    await Promise.all([service.consume(message), service.consume(message)]);
+
+    expect(paymentProcessor.processPaymentCreated).toHaveBeenCalledTimes(1);
+  });
 });
